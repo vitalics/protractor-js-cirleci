@@ -1,0 +1,27 @@
+version: 2 # use CircleCI 2.0
+jobs: # a collection of steps
+  build:
+    working_directory: ~/repo
+    docker: # run the steps with Docker
+      - image: circleci/node:8.12.0-browsers
+    steps: # a collection of executable commands 
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install dependencies
+          command: npm install
+      - save_cache: 
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run: # check
+          name: check versions
+          command: |
+           node -v && java -version
+      - run: # updating webdriver
+          name: update webdriver
+          command: node ./node_modules/protractor/bin/webdriver-manager update
+      - run: # run tests
+          name: ci test
+          command: npm run test
